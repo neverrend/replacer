@@ -1,4 +1,4 @@
-package com.extension;
+package com.replacer;
 
 import burp.api.montoya.MontoyaApi;
 import burp.api.montoya.core.ToolType;
@@ -195,7 +195,6 @@ public class ReplacerContextMenu implements ContextMenuItemsProvider {
         String partDelimiter = "--" + boundary;
         String closingDelimiter = partDelimiter + "--";
 
-        // Build regex to find existing part with matching name
         // Multipart part looks like:
         // --boundary\r\nContent-Disposition: form-data; name="fieldName"\r\n\r\nvalue\r\n
         String partPattern = partDelimiter + "\r\nContent-Disposition: form-data; name=\"" + name + "\"";

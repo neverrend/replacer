@@ -1,4 +1,4 @@
-package com.extension;
+package com.replacer;
 
 import burp.api.montoya.BurpExtension;
 import burp.api.montoya.MontoyaApi;
@@ -15,4 +15,3 @@ public class Extension implements BurpExtension {
         api.logging().logToOutput("Replacer extension loaded successfully.");
     }
 }
-

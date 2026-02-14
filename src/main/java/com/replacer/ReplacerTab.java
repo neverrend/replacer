@@ -1,4 +1,4 @@
-package com.extension;
+package com.replacer;
 
 import burp.api.montoya.MontoyaApi;
 
