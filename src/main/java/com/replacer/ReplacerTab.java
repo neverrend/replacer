@@ -30,6 +30,7 @@ public class ReplacerTab {
 
         JScrollPane scrollPane = new JScrollPane(rulesContainer);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         mainPanel.add(topBar, BorderLayout.NORTH);
         mainPanel.add(scrollPane, BorderLayout.CENTER);
