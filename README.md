@@ -8,6 +8,7 @@ A Burp Suite extension for defining reusable match-and-replace rules that can be
 - **Copy from requests** — Right-click a request in Proxy, Logger, or Target to extract live values into a rule's Replace fields
 - **Apply to Repeater** — Right-click in Repeater to apply a rule's replacements to the current request in-place
 - **Duplicate rules** — Clone an existing rule with all its type rows using "+ make a copy"
+- **Save / Load rules** — Export all rules as JSON to save them, and import JSON to restore rules in a future Burp session
 
 ## Supported Types
 
@@ -26,7 +27,7 @@ A Burp Suite extension for defining reusable match-and-replace rules that can be
 ./gradlew build
 ```
 
-The extension JAR will be at `build/libs/burp-extension-1.0.0.jar`.
+The extension JAR will be at `build/libs/replacer-1.0.0.jar`.
 
 ### Load in Burp Suite
 
@@ -63,6 +64,18 @@ For example, if you have a rule "Auth" with a Header type row matching `Authoriz
 3. The extension applies all of the rule's match/replace substitutions to the request in-place
 
 If a matched parameter doesn't exist in the request, it will be added automatically (new header, new query param, new body param, or new multipart form field).
+
+### Saving and loading rules
+
+Burp sessions are ephemeral — rules are lost when you restart Burp. Use Save / Load to persist them:
+
+1. Click **Save / Load Rules** in the Replacer tab toolbar
+2. Click **Export Rules** to serialize all current rules as JSON in the text area
+3. Copy the JSON and save it to a file for safekeeping
+4. To restore rules later, paste the JSON into the text area and click **Load Rules**
+5. Click **Back** to return to the rules view
+
+Loading rules replaces all existing rules with the ones from the JSON.
 
 ## Requirements
 
