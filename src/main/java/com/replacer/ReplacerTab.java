@@ -13,17 +13,35 @@ public class ReplacerTab {
             "Header", "Cookie", "URL Parameter", "POST Body Parameter"
     };
 
-    private final JPanel mainPanel;
+    private static final String RULES_CARD = "rules";
+    private static final String JSON_CARD = "json";
+
+    private final JPanel cardPanel;
+    private final CardLayout cardLayout;
     private final JPanel rulesContainer;
+    private final JTextArea jsonTextArea;
     private final List<RulePanel> rulePanels = new ArrayList<>();
 
     public ReplacerTab(MontoyaApi api) {
-        mainPanel = new JPanel(new BorderLayout());
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        jsonTextArea = new JTextArea();
+        jsonTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+
+        // --- Rules View ---
+        JPanel rulesView = new JPanel(new BorderLayout());
 
         JPanel topBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
         JButton addButton = new JButton("+");
         addButton.addActionListener(e -> addRulePanel());
         topBar.add(addButton);
+
+        JButton saveLoadButton = new JButton("Save / Load Rules");
+        saveLoadButton.addActionListener(e -> {
+            jsonTextArea.setText("");
+            cardLayout.show(cardPanel, JSON_CARD);
+        });
+        topBar.add(saveLoadButton);
 
         rulesContainer = new JPanel();
         rulesContainer.setLayout(new BoxLayout(rulesContainer, BoxLayout.Y_AXIS));
@@ -32,10 +50,81 @@ public class ReplacerTab {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        mainPanel.add(topBar, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        rulesView.add(topBar, BorderLayout.NORTH);
+        rulesView.add(scrollPane, BorderLayout.CENTER);
 
-        api.userInterface().registerSuiteTab("Replacer", mainPanel);
+        // --- JSON View ---
+        JPanel jsonView = new JPanel(new BorderLayout());
+
+        JPanel jsonTopBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton backButton = new JButton("Back");
+        backButton.addActionListener(e -> cardLayout.show(cardPanel, RULES_CARD));
+        jsonTopBar.add(backButton);
+
+        JScrollPane jsonScrollPane = new JScrollPane(jsonTextArea);
+
+        JPanel jsonBottomBar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JButton exportButton = new JButton("Export Rules");
+        exportButton.addActionListener(e -> {
+            String json = JsonUtil.exportRules(rulePanels);
+            jsonTextArea.setText(json);
+        });
+        JButton loadButton = new JButton("Load Rules");
+        loadButton.addActionListener(e -> loadRulesFromJson());
+        jsonBottomBar.add(exportButton);
+        jsonBottomBar.add(loadButton);
+
+        jsonView.add(jsonTopBar, BorderLayout.NORTH);
+        jsonView.add(jsonScrollPane, BorderLayout.CENTER);
+        jsonView.add(jsonBottomBar, BorderLayout.SOUTH);
+
+        // --- Card Panel ---
+        cardPanel.add(rulesView, RULES_CARD);
+        cardPanel.add(jsonView, JSON_CARD);
+        cardLayout.show(cardPanel, RULES_CARD);
+
+        api.userInterface().registerSuiteTab("Replacer", cardPanel);
+    }
+
+    private void loadRulesFromJson() {
+        String json = jsonTextArea.getText().trim();
+        if (json.isEmpty()) return;
+
+        List<JsonUtil.RuleData> parsed;
+        try {
+            parsed = JsonUtil.parseRules(json);
+        } catch (RuntimeException ex) {
+            JOptionPane.showMessageDialog(cardPanel,
+                    "Invalid JSON: " + ex.getMessage(),
+                    "Load Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // Clear existing rules
+        rulePanels.clear();
+        rulesContainer.removeAll();
+
+        // Create rule panels from parsed data
+        for (JsonUtil.RuleData ruleData : parsed) {
+            RulePanel rulePanel = new RulePanel();
+            rulePanel.nameField.setText(ruleData.name);
+
+            // Remove the default empty type row
+            rulePanel.typeRows.clear();
+            rulePanel.typesListPanel.removeAll();
+
+            for (JsonUtil.TypeData typeData : ruleData.typeRows) {
+                rulePanel.addTypeRow(typeData.type, typeData.match, typeData.replace);
+            }
+
+            rulePanels.add(rulePanel);
+            rulesContainer.add(rulePanel.getPanel());
+        }
+
+        rulesContainer.revalidate();
+        rulesContainer.repaint();
+        cardLayout.show(cardPanel, RULES_CARD);
     }
 
     public List<RulePanel> getRulePanels() {

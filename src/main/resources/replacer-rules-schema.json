@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "replacer-rules-schema.json",
+  "title": "Replacer Rules",
+  "description": "Schema for Burp Suite Replacer plugin rule export/import",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/rule"
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["name", "typeRows"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Display name for the rule"
+        },
+        "typeRows": {
+          "type": "array",
+          "minItems": 1,
+          "description": "One or more match/replace operations that make up this rule",
+          "items": {
+            "$ref": "#/$defs/typeRow"
+          }
+        }
+      }
+    },
+    "typeRow": {
+      "type": "object",
+      "required": ["type", "match", "replace"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["Header", "Cookie", "URL Parameter", "POST Body Parameter"],
+          "description": "The part of the HTTP request to target"
+        },
+        "match": {
+          "type": "string",
+          "description": "The header name, cookie name, or parameter name to match"
+        },
+        "replace": {
+          "type": "string",
+          "description": "The value to write when the rule is applied"
+        }
+      }
+    }
+  }
+}
