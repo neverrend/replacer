@@ -21,6 +21,9 @@ shadowJar {
     archiveBaseName.set('replacer')
     archiveClassifier.set('')
     archiveVersion.set(version)
+    manifest {
+        attributes 'Main-Class': 'com.replacer.Extension'
+    }
 }
 
 tasks.named('build') {

@@ -139,17 +139,19 @@ public class ReplacerContextMenu implements ContextMenuItemsProvider {
     private HttpRequest applyReplacement(HttpRequest request, String type, String match, String replace) {
         switch (type) {
             case "Header":
+                String safeHeaderValue = sanitizeHeaderValue(replace);
                 if (request.hasHeader(match)) {
-                    return request.withUpdatedHeader(match, replace);
+                    return request.withUpdatedHeader(match, safeHeaderValue);
                 }
-                return request.withAddedHeader(match, replace);
+                return request.withAddedHeader(match, safeHeaderValue);
             case "Cookie":
+                String safeCookieValue = sanitizeHeaderValue(replace);
                 String cookieHeader = request.headerValue("Cookie");
                 if (cookieHeader != null) {
-                    String updatedCookie = replaceCookieValue(cookieHeader, match, replace);
+                    String updatedCookie = replaceCookieValue(cookieHeader, match, safeCookieValue);
                     return request.withUpdatedHeader("Cookie", updatedCookie);
                 }
-                return request.withAddedHeader("Cookie", match + "=" + replace);
+                return request.withAddedHeader("Cookie", match + "=" + safeCookieValue);
             case "URL Parameter":
                 if (request.hasParameter(match, HttpParameterType.URL)) {
                     return request.withUpdatedParameters(HttpParameter.urlParameter(match, replace));
@@ -169,6 +171,7 @@ public class ReplacerContextMenu implements ContextMenuItemsProvider {
     }
 
     private HttpRequest applyMultipartReplacement(HttpRequest request, String name, String value) {
+        name = sanitizeFieldName(name);
         String contentType = request.headerValue("Content-Type");
         if (contentType == null) {
             return request;
@@ -222,6 +225,16 @@ public class ReplacerContextMenu implements ContextMenuItemsProvider {
             String newBody = body.replace(closingDelimiter, newPart + closingDelimiter);
             return request.withBody(newBody);
         }
+    }
+
+    private static String sanitizeHeaderValue(String value) {
+        if (value == null) return null;
+        return value.replace("\r", "").replace("\n", "");
+    }
+
+    private static String sanitizeFieldName(String name) {
+        if (name == null) return null;
+        return name.replace("\"", "").replace("\r", "").replace("\n", "");
     }
 
     private String parseCookieValue(String cookieHeader, String name) {

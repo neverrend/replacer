@@ -5,13 +5,16 @@ import burp.api.montoya.MontoyaApi;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class ReplacerTab {
 
     private static final String[] RULE_TYPES = {
             "Header", "Cookie", "URL Parameter", "POST Body Parameter"
     };
+    private static final Set<String> VALID_TYPES = Set.of(RULE_TYPES);
 
     private static final String RULES_CARD = "rules";
     private static final String JSON_CARD = "json";
@@ -95,7 +98,7 @@ public class ReplacerTab {
             parsed = JsonUtil.parseRules(json);
         } catch (RuntimeException ex) {
             JOptionPane.showMessageDialog(cardPanel,
-                    "Invalid JSON: " + ex.getMessage(),
+                    "Invalid JSON. Please check the format and try again.",
                     "Load Error",
                     JOptionPane.ERROR_MESSAGE);
             return;
@@ -115,6 +118,9 @@ public class ReplacerTab {
             rulePanel.typesListPanel.removeAll();
 
             for (JsonUtil.TypeData typeData : ruleData.typeRows) {
+                if (typeData.type == null || !VALID_TYPES.contains(typeData.type)) {
+                    continue;
+                }
                 rulePanel.addTypeRow(typeData.type, typeData.match, typeData.replace);
             }
 
@@ -128,7 +134,7 @@ public class ReplacerTab {
     }
 
     public List<RulePanel> getRulePanels() {
-        return rulePanels;
+        return Collections.unmodifiableList(rulePanels);
     }
 
     private void addRulePanel() {
